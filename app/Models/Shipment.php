@@ -10,10 +10,9 @@ class Shipment extends Model
     use HasFactory;
 
     protected $table = 'shipments';
-    protected $primaryKey = 'shipments_id';
+    protected $primaryKey = 'shipment_id';
 
     public $incrementing = true;
-
     protected $keyType = 'int';
 
     protected $fillable = [
@@ -24,7 +23,22 @@ class Shipment extends Model
         'weight',
     ];
 
-    public function status() {
-        return $this->belongsTo(Status::class, 'status', 'status');
+    public function histories()
+    {
+        return $this->hasMany(ShipmentHistory::class, 'shipment_id');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Listening to the updated event on the Shipment model
+        static::updated(function ($shipment) {
+            // Record the changes in the shipment_histories table
+            ShipmentHistory::create([
+                'shipment_id' => $shipment->shipment_id,
+                'changes' => json_encode($shipment->getChanges()), // Record the changes made
+            ]);
+        });
     }
 }

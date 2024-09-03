@@ -1,6 +1,9 @@
 <?php
 
+
 use App\Models\Shipment;
+use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\StatusController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,29 +18,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/shipments', function () {
-    return Shipment::all();
-});
 
-Route::get('/shipments/{id}', function ($id) {
-    return Shipment::find($id);
-});
+Route::get('/shipments', [ShipmentController::class, 'index']);
+Route::get('/shipments/{id}', [ShipmentController::class, 'show']);
+Route::post('/shipments', [ShipmentController::class, 'store']);
+Route::put('/shipments/{id}', [ShipmentController::class, 'update']);
+Route::delete('/shipments/{id}', [ShipmentController::class, 'destroy']);
+Route::get('/shipments/{id}/history', [ShipmentController::class, 'history']);
 
-Route::post('/shipments', function (Request $request) {
-    return Shipment::create($request->all());
-});
-
-Route::put('/shipments/{id}', function (Request $request, $id) {
-    $shipment = Shipment::find($id);
-    $shipment->update($request->all());
-    return $shipment;
-});
-
-Route::delete('/shipments/{id}', function ($id) {
-    Shipment::find($id)->delete();
-    return 204;
-});
-
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+Route::get('/statuses', [StatusController::class, 'index']);
+Route::get('/statuses/{id}', [StatusController::class, 'show']);
+Route::post('/statuses', [StatusController::class, 'store']);
+Route::put('/statuses/{id}', [StatusController::class, 'update']);
+Route::delete('/statuses/{id}', [StatusController::class, 'destroy']);

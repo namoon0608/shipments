@@ -15,14 +15,15 @@ class CreateStatusesTable extends Migration
     {
         Schema::create('statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('status')->unique();
+            $table->string('name')->unique(); // Custom status name
             $table->timestamps();
         });
 
-        Schema::table('shipments', function  (Blueprint $table) {
-            $table->string('status');
-            $table->foreign('status')->references('status')->on('statused')->onDelete('cascade');
-        });
+        DB::table('statuses')->insert([
+            ['name' => 'Pending'],
+            ['name' => 'In Transit'],
+            ['name' => 'Delivered']
+        ]);
     }
 
     /**
@@ -32,11 +33,6 @@ class CreateStatusesTable extends Migration
      */
     public function down()
     {
-        Schema::table('shipments', function  (Blueprint $table) {
-            $table->dropForeign(['status']);
-            $table->dropColumn('status');
-        });
-
         Schema::dropIfExists('statuses');
     }
 }

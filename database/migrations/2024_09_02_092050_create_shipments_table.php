@@ -17,7 +17,7 @@ class CreateShipmentsTable extends Migration
             $table->id('shipment_id');
             $table->string('origin');
             $table->string('destination');
-            $table->enum('status', ["Pending", "In Transit", "Delivered"])->default("Pending");
+            $table->enum('status', ['Pending', 'In Transit', 'Delivered'])->default('Pending');
             $table->text('cargo_details');
             $table->decimal("weight", 10, 2);
             $table->timestamps();

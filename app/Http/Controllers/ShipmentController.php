@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shipment;
+use App\Models\Status;
+use App\Models\ShipmentHistory;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ShipmentController extends Controller
 {
@@ -16,7 +19,7 @@ class ShipmentController extends Controller
     {
         $shipments = Shipment::all();
 
-        return response()->json($shipment, 200);
+        return response()->json($shipments, 200);
     }
 
     /**
@@ -40,7 +43,7 @@ class ShipmentController extends Controller
         $request->validate([
             'origin' => 'required|string|max:100',
             'destination' => 'required|string|max:100',
-            'status' => 'required|in:Pending,In Transit,Delivered',
+            'status' => 'required|in:' . implode(',', Status::pluck('name')->toArray()),
             'cargo_details' => 'required|string',
             'weight' => 'required|numeric',
         ]);
@@ -56,7 +59,7 @@ class ShipmentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Shipment $shipment)
+    public function show($id)
     {
         $shipment = Shipment::find($id);
 
@@ -87,24 +90,43 @@ class ShipmentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $shipment = Shipment::find($id);
+        try {
+            $shipment = Shipment::find($id);
 
-        if (!$shipment) {
-            return response()->json(['error' => 'Shipment not found'], 404);
-        } else {
+            $request->validate([
+                'origin' => 'required|string|max:100',
+                'destination' => 'required|string|max:100',
+                'status' => 'required|in:' . implode(',', Status::pluck('name')->toArray()),
+                'cargo_details' => 'required|string',
+                'weight' => 'required|numeric',
+            ]);
 
+            if (!$shipment) {
+                return response()->json(['error' => 'Shipment not found'], 404);
+            }
+
+            // $changes = $shipment->getChanges();
+
+            // if ($changes) {
+            //     ShipmentHistory::create([
+            //         'shipment_id' => $shipment->id,
+            //         'changes' => json_encode($changes),
+            //     ]);
+            // }
+
+            $shipment->update($request->all());
+
+            return response()->json($shipment, 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'messages' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            // Return a generic error message for other exceptions
+            return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
         }
-        $request->validate([
-            'origin' => 'required|string|max:100',
-            'destination' => 'required|string|max:100',
-            'status' => 'required|in:Pending,In Transit,Delivered',
-            'cargo_details' => 'required|string',
-            'weight' => 'required|numeric',
-        ]);
 
-        $shipment->update($request->all());
-
-        return redirect()->route('shipments.index')->with('success', 'Shipment updated successfully');
     }
 
     /**
@@ -113,10 +135,25 @@ class ShipmentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Shipment $shipment)
+    public function destroy($id)
     {
+        $shipment = Shipment::findOrFail($id);
         $shipment->delete();
 
-        return redirect()->route('shipments.index')->with('success', 'Shipment deleted successfully');
+        return response()->json([
+            'status' => true,
+            'message' => 'Delete Successfully'
+        ], 200);
+    }
+
+    public function history($id)
+    {
+        $history = ShipmentHistory::where('shipment_id', $id)->get();
+
+        if ($history->isEmpty()) {
+            return response()->json(['message' => 'No history found for this shipment.'], 404);
+        }
+
+        return response()->json($history, 200);
     }
 }
