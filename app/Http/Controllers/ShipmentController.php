@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Shipment;
 use App\Models\Status;
 use App\Models\ShipmentHistory;
+use App\Models\ShippingLine;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class ShipmentController extends Controller
 {
@@ -99,20 +101,13 @@ class ShipmentController extends Controller
                 'status' => 'required|in:' . implode(',', Status::pluck('name')->toArray()),
                 'cargo_details' => 'required|string',
                 'weight' => 'required|numeric',
+                'shipping_line_id' => 'nullable|exists:shipping_lines,shipping_line_id', // Validate shipping line
             ]);
+
 
             if (!$shipment) {
                 return response()->json(['error' => 'Shipment not found'], 404);
             }
-
-            // $changes = $shipment->getChanges();
-
-            // if ($changes) {
-            //     ShipmentHistory::create([
-            //         'shipment_id' => $shipment->id,
-            //         'changes' => json_encode($changes),
-            //     ]);
-            // }
 
             $shipment->update($request->all());
 
@@ -126,7 +121,6 @@ class ShipmentController extends Controller
             // Return a generic error message for other exceptions
             return response()->json(['error' => 'An error occurred', 'message' => $e->getMessage()], 500);
         }
-
     }
 
     /**

@@ -4,6 +4,7 @@
 use App\Models\Shipment;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\ShippingLineController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,3 +32,8 @@ Route::get('/statuses/{id}', [StatusController::class, 'show']);
 Route::post('/statuses', [StatusController::class, 'store']);
 Route::put('/statuses/{id}', [StatusController::class, 'update']);
 Route::delete('/statuses/{id}', [StatusController::class, 'destroy']);
+
+Route::get('/shipping-lines', [ShippingLineController::class, 'index']);
+Route::post('/shipping-lines', [ShippingLineController::class, 'store']);
+Route::put('/shipping-lines/{id}', [ShippingLineController::class, 'update']);
+Route::delete('/shipping-lines/{id}', [ShippingLineController::class, 'destroy']);

@@ -21,11 +21,17 @@ class Shipment extends Model
         'status',
         'cargo_details',
         'weight',
+        'shipping_line_id'
     ];
 
     public function histories()
     {
         return $this->hasMany(ShipmentHistory::class, 'shipment_id');
+    }
+
+    public function shippingLine()
+    {
+        return $this->belongsTo(ShippingLine::class, 'shipping_line_id');
     }
 
     protected static function boot()
